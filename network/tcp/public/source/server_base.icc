@@ -1,0 +1,5 @@
+inline server_base::server_base() :
+	status(server_status::null)
+{}
+
+inline server_base::~server_base() {}

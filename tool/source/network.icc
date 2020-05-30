@@ -1,0 +1,6 @@
+inline void close_socket(SOCKET& sock) {
+	if (sock != INVALID_SOCKET) {
+		closesocket(sock);
+		sock = INVALID_SOCKET;
+	}
+}

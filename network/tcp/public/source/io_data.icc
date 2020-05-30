@@ -1,0 +1,40 @@
+inline uint32_t io_data::pack_len(slen_t data_len_) {
+	return sizeof(head_pack) + data_len_ + sizeof(tail_pack);
+}
+
+inline uint32_t io_data::total_len(slen_t data_len_) {
+	return sizeof(pack_info) + pack_len(data_len_);
+}
+
+inline char* io_data::current_data() {
+	return reinterpret_cast<char*>(_current_write + 1);
+}
+
+inline slen_t io_data::current_len() {
+	return _current_write->len;
+}
+
+inline void io_data::del_current_data() {
+	if (!_current_write) {
+		return;
+	}
+	_memory_pool.common.deallocate(reinterpret_cast<char*>(_current_write));
+	_current_write = nullptr;
+}
+
+inline void io_data::reset_read_buf() {
+	memset(_read_buf, 0, io_data_use::read_buf_size);
+}
+
+inline bool io_data::empty() {
+	return !_current_write && _write_data.empty();
+}
+
+inline void io_data::read(slen_t data_len_) {
+	raii::critical r1(&_cris[static_cast<uint32_t>(shared_cri::read)]);
+	if (!_io_switch[static_cast<uint32_t>(io_type::read)]) {
+		return;
+	}
+	_read_data.append(_read_buf, data_len_);
+	decode();
+}

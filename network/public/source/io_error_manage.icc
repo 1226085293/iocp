@@ -1,0 +1,21 @@
+inline void io_error_manage::no_error(io_err_type type_) {
+	continued_error_count[static_cast<uint32_t>(type_)] = 0;
+}
+
+template<class Func, class... Args>
+void io_error_manage::set_error_process(io_err_type type_, uint8_t limit_num_, Func&& func, Args&& ... args) {
+	auto task = std::make_shared<std::packaged_task<typename std::invoke_result<Func, Args...>::type()>>(std::bind(std::forward<Func>(func), std::forward<Args>(args)...));
+	error_process[static_cast<uint32_t>(type_)] = [task] {
+		(*task)();
+	};
+	error_limit[static_cast<uint32_t>(type_)] = limit_num_;
+}
+
+template<class Func, class... Args>
+void io_error_manage::set_continued_error_process(io_err_type type_, uint8_t limit_num_, Func&& func, Args&& ... args) {
+	auto task = std::make_shared<std::packaged_task<typename std::invoke_result<Func, Args...>::type()>>(std::bind(std::forward<Func>(func), std::forward<Args>(args)...));
+	continued_error_process[static_cast<uint32_t>(type_)] = [task] {
+		(*task)();
+	};
+	continued_error_limit[static_cast<uint32_t>(type_)] = limit_num_;
+}

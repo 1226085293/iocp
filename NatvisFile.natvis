@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <!--<Type Name="命名空间::类名《模板类》 例: std::vector&lt;*&gt;">
+    <DisplayString>变量名后信息</DisplayString>
+    <Expand>
+      <Item Name="[type]" IncludeView="指定view显示">成员名</Item>
+      <Item Name="[type]" ExcludeView="指定view隐藏">成员名</Item>
+    </Expand>
+  </Type>-->
+  <Type Name="network::iocp::tcp::server">
+    <DisplayString>iocp_tcp_server</DisplayString>
+    <Expand>
+    </Expand>
+  </Type>
+</AutoVisualizer>

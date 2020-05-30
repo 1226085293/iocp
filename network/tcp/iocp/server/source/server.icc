@@ -1,0 +1,30 @@
+inline server_use::user_ptr server::creator_user() {
+	return server_use::user_ptr(_memory_pool.user.new_obj(_event_process.recv), _user_del);
+}
+
+inline void server::creator_user(server_use::user_ptr& user_) {
+	user_ = server_use::user_ptr(_memory_pool.user.new_obj(_event_process.recv), _user_del);
+}
+
+inline void server::add_user(server_use::user_ptr& user_) {
+	_users.emplace(user_->socket, user_);
+	printf("accept_users num: %zd\n", _users.size());
+}
+
+template <uint32_t N>
+void server::multicast(SOCKET(&sock_)[N], const char* data_, uint32_t len_) {
+	std::unordered_map<SOCKET, server_use::user_ptr>::iterator result;
+	for (int i = 0; i < N; ++i) {
+		result = _users.find(sock_[i]);
+		if (result != _users.end()) {
+			unicast(result->second, data_, len_);
+		}
+	}
+}
+
+template <uint32_t N>
+void multicast(server_use::user_ptr(&users_)[N], const char* data_, uint32_t len_) {
+	for (int i = 0; i < N; ++i) {
+		unicast(users_[i], data_, len_);
+	}
+}

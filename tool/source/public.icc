@@ -1,0 +1,6 @@
+inline void close_handle(HANDLE& handle) {
+	if (handle && handle != INVALID_HANDLE_VALUE) {
+		CloseHandle(handle);
+		handle = NULL;
+	}
+}

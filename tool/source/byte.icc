@@ -1,0 +1,11 @@
+inline void setbit(char& value_, uint32_t pos_) {
+	value_ |= (1 << pos_);
+}
+
+inline void clrbit(char& value_, uint32_t pos_) {
+	value_ &= ~(1 << pos_);
+}
+
+inline char getbit(char& value_, uint32_t pos_) {
+	return value_ & (1 << pos_);
+}

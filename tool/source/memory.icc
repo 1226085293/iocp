@@ -1,0 +1,15 @@
+inline void del_ptr(void* ptr) {
+	if (!ptr) {
+		return;
+	}
+	delete ptr;
+	ptr = nullptr;
+}
+
+inline void del_ptrs(void* ptr) {
+	if (!ptr) {
+		return;
+	}
+	delete[] ptr;
+	ptr = nullptr;
+}
