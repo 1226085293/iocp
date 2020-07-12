@@ -1,0 +1,49 @@
+inline client_use::server_ptr client::creator_server(SOCKET sock_, client_use::server_init_type type_) {
+	auto server = client_use::server_ptr(_memory_pool.server.new_obj(sock_, _event_process.recv), _server_del);
+	server->context.recv.parent = server->context.send.parent = server->context.common.parent = server;
+	init_server(server, type_);
+	return server;
+}
+
+inline void client::creator_server(client_use::server_ptr& server_, SOCKET sock_, client_use::server_init_type type_) {
+	server_ = client_use::server_ptr(_memory_pool.server.new_obj(sock_, _event_process.recv), _server_del);
+	server_->context.recv.parent = server_->context.send.parent = server_->context.common.parent = server_;
+	init_server(server_, type_);
+}
+
+inline void client::add_server(client_use::server_ptr& server_) {
+	_servers.emplace(server_->socket, server_);
+	printf("accept_servers num: %zd\n", _servers.size());
+}
+
+inline void client::unicast(SOCKET sock_, std::string& str_) {
+	raii::critical r1(&_cris[static_cast<uint32_t>(shared_cri::servers)]);
+	auto result = _servers.find(sock_);
+	if (result != _servers.end()) {
+		unicast(result->second, str_);
+	}
+}
+
+inline void client::unicast(client_use::event_info* info_, std::string& str_) {
+	auto server = CONTAINING_RECORD(info_, client_use::server, server::info)->shared_from_this();
+	unicast(server, str_);
+}
+
+template <uint32_t N>
+void client::multicast(SOCKET(&sock_)[N], std::string& str_) {
+	std::unordered_map<SOCKET, client_use::server_ptr>::iterator result;
+	for (int i = 0; i < N; ++i) {
+		raii::critical r1(&_cris[static_cast<uint32_t>(shared_cri::servers)]);
+		result = _servers.find(sock_[i]);
+		if (result != _servers.end()) {
+			unicast(result->second, str_);
+		}
+	}
+}
+
+template <uint32_t N>
+void client::multicast(client_use::event_info(&info_)[N], std::string& str_) {
+	for (int i = 0; i < N; ++i) {
+		unicast(info_[i], str_);
+	}
+}

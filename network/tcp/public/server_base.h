@@ -6,7 +6,7 @@ namespace network::tcp {
 	private:
 	protected:
 	public:
-		server_status	status;	//×´Ì¬
+		server_status	status;	//·şÎñ¶Ë×´Ì¬
 
 		server_base();
 		server_base(const server_base&) = delete;

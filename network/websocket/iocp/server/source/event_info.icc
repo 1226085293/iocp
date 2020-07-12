@@ -1,0 +1,4 @@
+inline event_info::event_info()
+{
+	memset(ip, 0, sizeof(ip));
+}

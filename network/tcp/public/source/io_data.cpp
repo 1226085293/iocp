@@ -20,14 +20,14 @@ namespace network {
 			for (uint8_t i = 0; i < shared_num; DeleteCriticalSection(&_cris[i++]));
 		}
 
-		void io_data::encode(pack_info* pack_, const char* data_, slen_t data_len_) {
+		void io_data::encode(pack_info* pack_, std::string& str_) {
 			pack_->slen = 0;
-			pack_->len = pack_len(data_len_);
+			pack_->len = package_len(static_cast<uint32_t>(str_.length()));
 			auto head = reinterpret_cast<head_pack*>(reinterpret_cast<char*>(pack_ + 1));
 			head->head = head_mark;
 			head->len = pack_->len;
-			memcpy_s(head + 1, data_len_, data_, data_len_);
-			auto tail = reinterpret_cast<tail_pack*>(reinterpret_cast<char*>(head + 1) + data_len_);
+			memcpy_s(head + 1, str_.length(), &str_[0], str_.length());
+			auto tail = reinterpret_cast<tail_pack*>(reinterpret_cast<char*>(head + 1) + str_.length());
 			tail->len = pack_->len;
 			tail->tail = tail_mark;
 		}
@@ -78,7 +78,7 @@ namespace network {
 						}
 						// 接收回调
 						_error_mag.no_error(io_err_type::discard);
-						_recv_func(_read_data.substr(sizeof(head_pack), head->len - pack_len(0)));
+						_recv_func(_read_data.substr(sizeof(head_pack), head->len - package_len(0)));
 						_read_data = _read_data.substr(head->len, _read_data.length());
 					}
 				}
@@ -102,19 +102,15 @@ namespace network {
 			_backup_data.clear();
 		}
 
-		void io_data::write(const char* data_, slen_t data_len_, uint8_t priority_) {
+		void io_data::write(std::string& str_, uint8_t priority_) {
 			raii::critical r1(&_cris[static_cast<uint32_t>(shared_cri::write)]);
 			// 安全检查
 			if (!_io_switch[static_cast<uint32_t>(io_type::write)]) {
 				return;
 			}
-			if (pack_len(data_len_) > UINT16_MAX) {
-				printf("消息包长度超出slen_t大小");
-				return;
-			}
 			// 编码
-			auto pack = reinterpret_cast<pack_info*>(_memory_pool.common.allocate(total_len(data_len_)));
-			encode(pack, data_, data_len_);
+			auto pack = reinterpret_cast<pack_info*>(_memory_pool.common.allocate(total_len(static_cast<uint32_t>(str_.length()))));
+			encode(pack, str_);
 			// 存在未发送完的数据并且写入数据优先级 > 未完成数据那么将加入备用队列
 			if (!_write_data.empty()) {
 				auto front_pack = reinterpret_cast<pack_info*>(_write_data.front()->data->front());
@@ -171,7 +167,7 @@ namespace network {
 			del_current_data();
 		}
 
-		void io_data::write_len(slen_t len_) {
+		void io_data::write_len(uint32_t len_) {
 			if (!_current_write) {
 				return;
 			}
@@ -189,7 +185,7 @@ namespace network {
 				return;
 			}
 			// 若只有一个消息列表一条数据则退出操作
-			if (_write_data.size() == 1 && _write_data.front()->data->size() == 1) {
+			if (_write_data.size() == 1 && _write_data.front()->data->size() == 1 && _write_data.front()->data->front()->len < write_buf_size) {
 				update_current_data();
 				return;
 			}

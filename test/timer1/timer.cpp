@@ -138,11 +138,11 @@ void Timer::checkTimer()
             }
             catch (const std::exception & e)
             {
-                //LCW("OnTimerHandler have runtime_error exception. timerID=" << timerID << ", err=" << e.what());
+                printf("OnTimerHandler have runtime_error exception. timerID=%I64d, err=%s", timerID, e.what());
             }
             catch (...)
             {
-                //LCW("OnTimerHandler have unknown exception. timerID=" << timerID);
+                printf("OnTimerHandler have unknown exception. timerID=%I64d", timerID);
             }
             delete handler;
         }
@@ -163,11 +163,11 @@ void Timer::checkTimer()
             }
             catch (const std::exception & e)
             {
-                //LCW("OnTimerHandler have runtime_error exception. timerID=" << timerID << ", err=" << e.what());
+                printf("OnTimerHandler have runtime_error exception. timerID=%I64d, err=%s", timerID, e.what());
             }
             catch (...)
             {
-                //LCW("OnTimerHandler have unknown exception. timerID=" << timerID);
+                printf("OnTimerHandler have unknown exception. timerID=%I64d", timerID);
             }
             delete handler;
         }

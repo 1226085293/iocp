@@ -11,10 +11,10 @@ time_heap::time_heap(uint32_t max_size_) :
 	// 初始化临界区
 	InitializeCriticalSection(&_cri);
 	std::thread work_thread([&] {
-		DWORD ms = INFINITE;
+		DWORD wait_re, ms = INFINITE;
 		std::shared_ptr<std::function<void()>> func;
 		while (true) {
-			DWORD wait_re = WaitForSingleObject(_event, ms);
+			wait_re = ms ? WaitForSingleObject(_event, ms) : WAIT_TIMEOUT;
 			if (!_size) {
 				ms = INFINITE;
 				continue;

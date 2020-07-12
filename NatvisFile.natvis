@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?> 
-<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+<AutoVisualizer xmlns="websocket://schemas.microsoft.com/vstudio/debugger/natvis/2010">
   <!--<Type Name="命名空间::类名《模板类》 例: std::vector&lt;*&gt;">
     <DisplayString>变量名后信息</DisplayString>
     <Expand>

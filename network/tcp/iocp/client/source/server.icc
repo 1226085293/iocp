@@ -1,0 +1,23 @@
+inline void server::set_mark(io_mark_type type_) {
+	tool::byte::setbit(_mark, static_cast<char>(type_));
+}
+
+inline void server::del_mark(io_mark_type type_) {
+	tool::byte::clrbit(_mark, static_cast<char>(type_));
+}
+
+inline bool server::get_mark(io_mark_type type_) {
+	return tool::byte::getbit(_mark, static_cast<char>(type_));
+}
+
+inline void server::set_status(server_status type_) {
+	tool::byte::setbit(_status, static_cast<char>(type_));
+}
+
+inline void server::del_status(server_status type_) {
+	tool::byte::clrbit(_status, static_cast<char>(type_));
+}
+
+inline bool server::get_status(server_status type_) {
+	return tool::byte::getbit(_status, static_cast<char>(type_));
+}

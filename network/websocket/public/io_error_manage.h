@@ -3,7 +3,7 @@
 #include <functional>
 #include "../public/define.h"
 
-namespace network {
+namespace network::websocket {
 	// 数据包错误信息
 	class io_error_manage {
 	private:

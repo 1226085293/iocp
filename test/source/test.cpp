@@ -4,7 +4,7 @@
 #include "pool/thread_pool.h"
 #include "pool/fixed_memory_pool.h"
 #include "pool/variable_memory_pool.h"
-#include "raii/critical.h"
+#include "other/raii/critical.h"
 #include "tool/time.h"
 #include "timer/time_heap.h"
 #include "../timer1/timer.h"
@@ -97,31 +97,33 @@ void test_max_heap2() {
 
 void test_timer1() {
 	auto& timer = time_heap::instance();
-	double second = 0.05;
-	uint64_t count = 100000;
+	double second = 5;
+	uint64_t count = 1000000;
+	uint64_t sta_time = tool::time::get_ms();
 	for (int i = 1; i <= count; ++i) {
-		timer.add(second, 1, [=](uint64_t sta_time, int index) {
+		timer.add(second, 1, [&](int index) {
 			if (index == count) {
 				printf("Îó²î: %I64d\n", tool::time::get_ms() - sta_time - static_cast<uint64_t>(second) * 1000);
 			}
 			//printf("index: %d\n", index);
 			}
-		, tool::time::get_ms(), i);
+		, i);
 	}
 }
 
 void test_timer2() {
 	auto timer1 = new zsummer::network::Timer;
-	uint64_t second = 50;
-	uint64_t count = 100000;
+	uint64_t second = 5000;
+	uint64_t count = 1000000;
+	uint64_t sta_time = tool::time::get_ms();
 	for (int i = 1; i <= count; ++i) {
-		auto func1 = [&](uint64_t sta_time, int index) {
+		auto func1 = [&](int index) {
 			if (index == count) {
 				printf("Îó²î: %I64d\n", tool::time::get_ms() - sta_time - second);
 			}
 			//printf("index: %d\n", index);
 		};
-		auto func2 = std::bind(func1, tool::time::get_ms(), i);
+		auto func2 = std::bind(func1, i);
 		timer1->createTimer(static_cast<uint32_t>(second), [=] {
 			func2();
 			}
@@ -148,7 +150,7 @@ void test_timer3() {
 		}
 	);
 	while (true) {
-		if (!re2->vaild) {
+		if (!re2->valid) {
 			return;
 		}
 		else {
@@ -176,7 +178,7 @@ void test_timer3() {
 	, 3);
 	auto timer1 = timer.add(1, 1, [=](int index) {
 		printf("index: %d\n", index);
-		if (timer2->vaild) {
+		if (timer2->valid) {
 			timer2->del();
 		}
 		}

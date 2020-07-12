@@ -1,16 +1,16 @@
-inline uint32_t io_data::pack_len(slen_t data_len_) {
+inline uint32_t io_data::package_len(uint32_t data_len_) {
 	return sizeof(head_pack) + data_len_ + sizeof(tail_pack);
 }
 
-inline uint32_t io_data::total_len(slen_t data_len_) {
-	return sizeof(pack_info) + pack_len(data_len_);
+inline uint32_t io_data::total_len(uint32_t data_len_) {
+	return sizeof(pack_info) + package_len(data_len_);
 }
 
 inline char* io_data::current_data() {
 	return reinterpret_cast<char*>(_current_write + 1);
 }
 
-inline slen_t io_data::current_len() {
+inline uint32_t io_data::current_len() {
 	return _current_write->len;
 }
 
@@ -30,7 +30,7 @@ inline bool io_data::empty() {
 	return !_current_write && _write_data.empty();
 }
 
-inline void io_data::read(slen_t data_len_) {
+inline void io_data::read(uint32_t data_len_) {
 	raii::critical r1(&_cris[static_cast<uint32_t>(shared_cri::read)]);
 	if (!_io_switch[static_cast<uint32_t>(io_type::read)]) {
 		return;

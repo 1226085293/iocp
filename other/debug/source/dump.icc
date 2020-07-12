@@ -1,0 +1,3 @@
+inline void init_dump() {
+	SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)dump_file);
+}

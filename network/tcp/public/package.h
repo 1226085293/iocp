@@ -5,13 +5,9 @@
 #pragma once
 #include "network/tcp/public/define.h"
 
+namespace network::tcp {
 #pragma pack(push)
 #pragma pack(1)
-
-// 包体信息
-
-
-namespace network::tcp {
 	/*
 	包体信息
 	存储结构：包体信息 + 报文结构

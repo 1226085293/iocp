@@ -1,4 +1,4 @@
-inline time_heap::event::event(intptr_t origin_, uint64_t ms_, int32_t count_, std::function<void()>&& func_) :
+inline time_heap::event::event(intptr_t origin_, uint64_t ms_, uint32_t count_, std::function<void()>&& func_) :
 	_origin(origin_),
 	_ms(ms_),
 	_count(count_),
@@ -13,12 +13,11 @@ inline void time_heap::event::del() {
 }
 
 template <class T>
-inline time_heap::result_data<T>::result_data(int32_t count_, std::shared_ptr<std::packaged_task<T()>> pack_func_) :
+inline time_heap::result_data<T>::result_data(uint32_t count_, std::shared_ptr<std::packaged_task<T()>> pack_func_) :
 	_info(nullptr),
 	_pack_func(pack_func_),
-	vaild(false),
-	count(count_),
-	run_count(0)
+	valid(true),
+	count(count_)
 {}
 
 template <class T>
@@ -27,15 +26,11 @@ inline T time_heap::result_data<T>::get() {
 }
 
 template <class T>
-void time_heap::result_data<T>::del(time_heap::event* info_) {
-	if (vaild) {
+void time_heap::result_data<T>::del() {
+	if (valid) {
+		valid = false;
 		_info->del();
-		vaild = false;
 		return;
-	}
-	if (info_ && !_info) {
-		_info = info_;
-		vaild = true;
 	}
 }
 
@@ -93,24 +88,24 @@ auto time_heap::add(double second_, uint32_t count_, Func&& func_, Args&& ... ar
 	if (current_size == _max_size) {
 		expansion();
 	}
-	using								re_t		= typename std::invoke_result<Func, Args...>::type;	//回调函数返回类型
-	uint64_t							mini_time	= _heap[1].ms;										//最小时间
-	auto								task		= std::make_shared<std::packaged_task<re_t()>>(std::bind(std::forward<Func>(func_), std::forward<Args>(args_)...));	//已包装回调函数指针
+	using	re_t = typename std::invoke_result<Func, Args...>::type;																	//回调函数返回类型
+	auto	task = std::make_shared<std::packaged_task<re_t()>>(std::bind(std::forward<Func>(func_), std::forward<Args>(args_)...));	//已包装回调函数指针
 	std::shared_ptr<result_data<re_t>>	result		= std::make_shared<result_data<re_t>>(count_, task);//返回数据
+	uint64_t							mini_time	= _heap[1].ms;										//最小时间
 	// 添加节点
 	_heap[current_size].ms = get_ms() + static_cast<int64_t>(second_) * 1000;	//结束时间
-	_heap[current_size].info = new event(reinterpret_cast<intptr_t>(&_heap[current_size].ms), static_cast<uint64_t>(second_), count_, [=] () {
+	_heap[current_size].info = new event(reinterpret_cast<intptr_t>(&_heap[current_size].ms), static_cast<uint64_t>(second_), count_, [=]() {
 		(*task)();
 		if (--result->count == 0) {
-			result->vaild = false;
+			result->valid = false;
 		}
 		else {
 			task->reset();
 		}
 		}
 	);
+	result->_info = _heap[current_size].info;
 	add_node();
-	result->del(_heap[current_size].info);
 	// 决定是否唤醒
 	if (mini_time != _heap[current_size].ms) {
 		SetEvent(_event);

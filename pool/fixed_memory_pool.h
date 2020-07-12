@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include "raii/critical.h"
+#include "other/raii/critical.h"
 
 template <class T, uint32_t block_size = 512>
 class fixed_memory_pool {

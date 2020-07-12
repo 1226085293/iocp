@@ -1,7 +1,14 @@
 #pragma once
 #include <deque>
 #include <WinSock2.h>
-#include "raii/critical.h"
+#include "other/raii/critical.h"
+#include "tool/byte.h"
+
+enum class socket_option {
+	null,
+	non_block = 0x01,		//非阻塞
+	port_multiplex = 0x02,	//端口复用
+};
 
 template <uint32_t load_num = 512>
 class socket_pool {
@@ -20,11 +27,11 @@ public:
 	~socket_pool();
 
 	// 获取socket
-	SOCKET get();
+	SOCKET get(char option = 0);
 	// 回收socket
 	void rec(SOCKET sock);
 	// 删除socket
-	void del(SOCKET& sock, bool reset = true);
+	void del(SOCKET& sock, bool reset = false);
 };
 
 #include "source/socket_pool.tcc"

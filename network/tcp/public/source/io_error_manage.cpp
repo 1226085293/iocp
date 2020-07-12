@@ -1,6 +1,6 @@
 #include "../io_error_manage.h"
 
-namespace network {
+namespace network::tcp {
 	io_error_manage::io_error_manage() {
 		for (int i = 0; i < io_err_tnum; ++i) {
 			error_count[i] = error_limit[i] = 0;

@@ -8,7 +8,7 @@
 #define LOCK_MODEL CRITICAL
 
 #if (LOCK_MODEL == CRITICAL)
-#include "raii/critical.h"
+#include "other/raii/critical.h"
 #elif (LOCK_MODEL == LOCK)
 #include <mutex>
 #else

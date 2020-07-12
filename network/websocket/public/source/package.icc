@@ -1,0 +1,3 @@
+inline request::request() :
+	init(false)
+{}

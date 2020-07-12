@@ -12,25 +12,26 @@
 namespace network {
 	// --------------------------------常量定义
 	constexpr uint32_t io_type_tnum = 3;	//io类型数
-	constexpr uint32_t io_err_tnum = 3;		//io错误类型数
 	// --------------------------------枚举
 	// 服务端状态
 	enum class server_status {
 		null,
-		run,	//运行
-		close,	//关闭
+		run,		//运行
+		close,		//关闭
+		destroy,	//销毁
+	};
+	// 客户端状态
+	enum class client_status {
+		null,
+		run,		//运行
+		close,		//关闭
+		destroy,	//销毁
 	};
 	// io类型
 	enum class io_type {
 		null,
 		read,	//读
 		write,	//写
-	};
-	// 数据包错误类型
-	enum class io_err_type {
-		discard,	//丢包数(残缺包)
-		invalid,	//无校包(解码后存在剩余空间/空间不够解码完成)
-		repeat,		//重复数(时间戳相同/消息类型相同并且不在重复消息列表内)
 	};
 	// --------------------------------类/结构体声明
 	// --------------------------------类型别名

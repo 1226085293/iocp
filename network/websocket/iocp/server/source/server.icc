@@ -1,0 +1,59 @@
+inline server_use::client_ptr server::creator_client(SOCKET sock_, server_use::client_init_type type_) {
+	auto client = server_use::client_ptr(_memory_pool.client.new_obj(sock_, _event_process.recv), _client_del);
+	client->context.recv.parent = client->context.send.parent = client->context.common.parent = client;
+	init_client(client, type_);
+	return client;
+}
+
+inline void server::creator_client(server_use::client_ptr& client_, SOCKET sock_, server_use::client_init_type type_) {
+	client_ = server_use::client_ptr(_memory_pool.client.new_obj(sock_, _event_process.recv), _client_del);
+	client_->context.recv.parent = client_->context.send.parent = client_->context.common.parent = client_;
+	init_client(client_, type_);
+}
+
+inline void server::add_client(server_use::client_ptr& client_) {
+	_clients.emplace(client_->socket, client_);
+	printf("accept_clients num: %zd\n", _clients.size());
+}
+
+inline void server::unicast(SOCKET sock_, std::string& str_) {
+	raii::critical r1(&_cris[static_cast<uint32_t>(shared_cri::clients)]);
+	auto result = _clients.find(sock_);
+	if (result != _clients.end()) {
+		unicast(result->second, str_);
+	}
+}
+
+inline void server::unicast(server_use::event_info* info_, std::string& str_) {
+	auto client = CONTAINING_RECORD(info_, server_use::client, client::info)->shared_from_this();
+	unicast(client, str_);
+}
+
+template <uint32_t N>
+void server::multicast(SOCKET(&sock_)[N], std::string& str_) {
+	std::unordered_map<SOCKET, server_use::client_ptr>::iterator result;
+	for (int i = 0; i < N; ++i) {
+		raii::critical r1(&_cris[static_cast<uint32_t>(shared_cri::clients)]);
+		result = _clients.find(sock_[i]);
+		if (result != _clients.end()) {
+			unicast(result->second, str_);
+		}
+	}
+}
+
+template <uint32_t N>
+void server::multicast(server_use::event_info(&info_)[N], std::string& str_) {
+	for (int i = 0; i < N; ++i) {
+		unicast(info_[i], str_);
+	}
+}
+
+inline void server::forced_close_client(server_use::event_info* info_) {
+	auto client = CONTAINING_RECORD(info_, server_use::client, client::info)->shared_from_this();
+	forced_disconnect(client);
+}
+
+inline void server::close_client(server_use::event_info* info_) {
+	auto client = CONTAINING_RECORD(info_, server_use::client, client::info)->shared_from_this();
+	post_disconnect(client);
+}

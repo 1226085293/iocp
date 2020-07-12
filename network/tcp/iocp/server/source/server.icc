@@ -1,30 +1,49 @@
-inline server_use::user_ptr server::creator_user() {
-	return server_use::user_ptr(_memory_pool.user.new_obj(_event_process.recv), _user_del);
+inline server_use::client_ptr server::creator_client(SOCKET sock_, server_use::client_init_type type_) {
+	auto client = server_use::client_ptr(_memory_pool.client.new_obj(sock_, _event_process.recv), _client_del);
+	client->context.recv.parent = client->context.send.parent = client->context.common.parent = client;
+	init_client(client, type_);
+	return client;
 }
 
-inline void server::creator_user(server_use::user_ptr& user_) {
-	user_ = server_use::user_ptr(_memory_pool.user.new_obj(_event_process.recv), _user_del);
+inline void server::creator_client(server_use::client_ptr& client_, SOCKET sock_, server_use::client_init_type type_) {
+	client_ = server_use::client_ptr(_memory_pool.client.new_obj(sock_, _event_process.recv), _client_del);
+	client_->context.recv.parent = client_->context.send.parent = client_->context.common.parent = client_;
+	init_client(client_, type_);
 }
 
-inline void server::add_user(server_use::user_ptr& user_) {
-	_users.emplace(user_->socket, user_);
-	printf("accept_users num: %zd\n", _users.size());
+inline void server::add_client(server_use::client_ptr& client_) {
+	_clients.emplace(client_->socket, client_);
+	printf("accept_clients num: %zd\n", _clients.size());
+}
+
+inline void server::unicast(SOCKET sock_, std::string& str_) {
+	raii::critical r1(&_cris[static_cast<uint32_t>(shared_cri::clients)]);
+	auto result = _clients.find(sock_);
+	if (result != _clients.end()) {
+		unicast(result->second, str_);
+	}
+}
+
+inline void server::unicast(server_use::event_info* info_, std::string& str_) {
+	auto client = CONTAINING_RECORD(info_, server_use::client, client::info)->shared_from_this();
+	unicast(client, str_);
 }
 
 template <uint32_t N>
-void server::multicast(SOCKET(&sock_)[N], const char* data_, uint32_t len_) {
-	std::unordered_map<SOCKET, server_use::user_ptr>::iterator result;
+void server::multicast(SOCKET(&sock_)[N], std::string& str_) {
+	std::unordered_map<SOCKET, server_use::client_ptr>::iterator result;
 	for (int i = 0; i < N; ++i) {
-		result = _users.find(sock_[i]);
-		if (result != _users.end()) {
-			unicast(result->second, data_, len_);
+		raii::critical r1(&_cris[static_cast<uint32_t>(shared_cri::clients)]);
+		result = _clients.find(sock_[i]);
+		if (result != _clients.end()) {
+			unicast(result->second, str_);
 		}
 	}
 }
 
 template <uint32_t N>
-void multicast(server_use::user_ptr(&users_)[N], const char* data_, uint32_t len_) {
+void server::multicast(server_use::event_info(&info_)[N], std::string& str_) {
 	for (int i = 0; i < N; ++i) {
-		unicast(users_[i], data_, len_);
+		unicast(info_[i], str_);
 	}
 }

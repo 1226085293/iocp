@@ -1,7 +1,7 @@
 #pragma once
 #include <future>
 #include <functional>
-#include "raii/critical.h"
+#include "other/raii/critical.h"
 
 class time_heap {
 private:
@@ -11,11 +11,11 @@ private:
 	private:
 		intptr_t				_origin;	//源地址
 		uint64_t				_ms;		//定时时长
-		int32_t					_count;		//执行数
+		uint32_t				_count;		//执行数
 		std::function<void()>	_func;		//回调函数
 	protected:
 	public:
-		event(intptr_t origin_, uint64_t ms_, int32_t count_, std::function<void()>&& func_);
+		event(intptr_t origin_, uint64_t ms_, uint32_t count_, std::function<void()>&& func_);
 		event(const event&) = delete;
 		event& operator =(const event&) = delete;
 		~event() = default;
@@ -26,16 +26,17 @@ private:
 	// 返回数据
 	template <class T>
 	class result_data {
+		friend class time_heap;
 	private:
 		event*										_info;		//事件信息
 		std::shared_ptr<std::packaged_task<T()>>	_pack_func;	//已包装的函数
 	protected:
 	public:
-		bool					vaild;		//有效性
-		int32_t					count;		//执行数
-		int32_t					run_count;	//已执行数
+		bool					valid;		//有效性
+		uint32_t				count;		//执行数
 
-		result_data(int32_t count_, std::shared_ptr<std::packaged_task<T()>> pack_func_);
+
+		result_data(uint32_t count_, std::shared_ptr<std::packaged_task<T()>> pack_func_);
 		result_data(const result_data&) = delete;
 		result_data& operator =(const result_data&) = delete;
 		~result_data() = default;
@@ -43,7 +44,7 @@ private:
 		// 获取执行结果
 		T get();
 		// 删除定时器
-		void del(event* info_ = nullptr);
+		void del();
 	};
 
 	// 堆节点

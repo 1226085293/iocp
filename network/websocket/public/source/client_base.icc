@@ -1,0 +1,5 @@
+inline client_base::client_base() :
+	status(client_status::null)
+{}
+
+inline client_base::~client_base() {}
